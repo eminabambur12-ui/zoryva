@@ -22,9 +22,9 @@ export default function Footer() {
             </div>
           </div>
           <div>
-            <div className="text-xs font-bold uppercase tracking-widest text-faint mb-4">Company</div>
+            <div className="text-xs font-bold uppercase tracking-widest text-faint mb-4">Support</div>
             <div className="flex flex-col gap-2">
-              {[['About', '#'], ['Blog', '#'], ['Careers', '#']].map(([l, h]) => (
+              {[['Contact Us', '/contact'], ['Pricing', '/pricing'], ['Sign Up', '/auth/signup']].map(([l, h]) => (
                 <Link key={l} href={h} className="text-sm text-muted hover:text-charcoal transition-colors">{l}</Link>
               ))}
             </div>
@@ -32,14 +32,14 @@ export default function Footer() {
           <div>
             <div className="text-xs font-bold uppercase tracking-widest text-faint mb-4">Legal</div>
             <div className="flex flex-col gap-2">
-              {[['Privacy Policy', '#'], ['Terms of Service', '#'], ['Security', '#']].map(([l, h]) => (
+              {[['Privacy Policy', '/privacy'], ['Terms of Service', '/terms'], ['Refund Policy', '/terms#refunds']].map(([l, h]) => (
                 <Link key={l} href={h} className="text-sm text-muted hover:text-charcoal transition-colors">{l}</Link>
               ))}
             </div>
           </div>
         </div>
         <div className="border-t border-rose/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-faint">© 2025 Zoryva. All rights reserved.</p>
+          <p className="text-xs text-faint">© 2026 Zoryva. All rights reserved.</p>
           <p className="text-xs text-faint">Made with ♥ for ambitious women</p>
         </div>
       </div>
