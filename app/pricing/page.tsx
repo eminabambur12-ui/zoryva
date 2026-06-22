@@ -6,7 +6,7 @@ const plans = [
   {
     name: 'Starter',
     price: 19,
-    priceId: 'STRIPE_STARTER_PRICE_ID',
+    priceId: process.env.STRIPE_STARTER_PRICE_ID ?? 'price_1TlG3sBgGTFsZGS1SaMn2POL',
     tagline: 'For personal budgeting & daily money clarity',
     features: [
       'Daily Safe Spend number',
@@ -22,7 +22,7 @@ const plans = [
   {
     name: 'Growth',
     price: 49,
-    priceId: 'STRIPE_GROWTH_PRICE_ID',
+    priceId: process.env.STRIPE_GROWTH_PRICE_ID ?? 'price_1TlG4ABgGTFsZGS1dLG7qqic',
     tagline: 'For creators, side hustlers & small business owners',
     badge: 'Most Popular',
     features: [
@@ -41,7 +41,7 @@ const plans = [
   {
     name: 'Pro',
     price: 99,
-    priceId: 'STRIPE_PRO_PRICE_ID',
+    priceId: process.env.STRIPE_PRO_PRICE_ID ?? 'price_1TlG4hBgGTFsZGS1iStLtH7b',
     tagline: 'For advanced business tracking & serious wealth building',
     features: [
       'Everything in Growth',
@@ -104,7 +104,7 @@ export default function PricingPage() {
                   <p className={`text-sm leading-relaxed mb-6 ${plan.highlighted ? 'text-white/60' : 'text-muted'}`}>{plan.tagline}</p>
 
                   <form action="/api/stripe/checkout" method="POST">
-                    <input type="hidden" name="priceId" value={`{{${plan.priceId}}}`} />
+                    <input type="hidden" name="priceId" value={plan.priceId} />
                     <input type="hidden" name="plan" value={plan.name.toLowerCase()} />
                     <button
                       type="submit"
