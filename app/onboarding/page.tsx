@@ -83,7 +83,7 @@ export default function OnboardingConnectPage() {
     // Plaid Link would initialize here with a real Plaid token
     // For now, simulate connection
     await new Promise(r => setTimeout(r, 1200))
-    setConnected(prev => new Set([...prev, connector.id]))
+    setConnected(prev => new Set([...Array.from(prev), connector.id]))
     setConnecting(null)
 
     // Save to connected_accounts
