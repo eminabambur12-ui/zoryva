@@ -8,18 +8,17 @@ export async function POST(request: Request) {
   try {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    // Auth check temporarily disabled for testing
-    // if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const { message } = await request.json()
     if (!message) return NextResponse.json({ error: 'No message' }, { status: 400 })
 
-    // Fetch user's financial data to give Zara context
-    const [{ data: profile }, { data: transactions }, { data: budgets }] = await Promise.all([
-      supabase.from('profiles').select('full_name, plan_type').eq('id', user.id).single(),
-      supabase.from('transactions').select('type, category, amount, date, source').eq('user_id', user.id).order('date', { ascending: false }).limit(100),
-      supabase.from('budgets').select('category, amount').eq('user_id', user.id),
-    ])
+    // Fetch user's financial data to give Zara context (skip if not logged in)
+    const userId = user?.id
+    const [{ data: profile }, { data: transactions }, { data: budgets }] = userId ? await Promise.all([
+      supabase.from('profiles').select('full_name, plan_type').eq('id', userId).single(),
+      supabase.from('transactions').select('type, category, amount, date, source').eq('user_id', userId).order('date', { ascending: false }).limit(100),
+      supabase.from('budgets').select('category, amount').eq('user_id', userId),
+    ]) : [{ data: null }, { data: null }, { data: null }]
 
     // Summarize financial data
     const income = transactions?.filter(t => t.type === 'income' && t.source === 'personal').reduce((s, t) => s + t.amount, 0) ?? 0
@@ -40,12 +39,12 @@ export async function POST(request: Request) {
     const topSpending = Object.entries(categorySpend).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([cat, amt]) => `${cat}: $${amt.toFixed(0)}`).join(', ')
 
     // Fetch recent conversation history for context
-    const { data: history } = await supabase
+    const { data: history } = userId ? await supabase
       .from('ai_messages')
       .select('role, content')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(10)
+      .limit(10) : { data: null }
 
     const recentHistory = (history ?? []).reverse()
 
@@ -92,11 +91,13 @@ YOUR PERSONALITY & RULES:
 
     const reply = completion.choices[0]?.message?.content ?? 'I had trouble generating a response. Please try again.'
 
-    // Save both messages to history
-    await supabase.from('ai_messages').insert([
-      { user_id: user.id, role: 'user', content: message },
-      { user_id: user.id, role: 'assistant', content: reply },
-    ])
+    // Save both messages to history (only if logged in)
+    if (userId) {
+      await supabase.from('ai_messages').insert([
+        { user_id: userId, role: 'user', content: message },
+        { user_id: userId, role: 'assistant', content: reply },
+      ])
+    }
 
     return NextResponse.json({ reply })
   } catch (err: any) {
