@@ -59,18 +59,25 @@ export default function ZaraChatPage() {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  // Load history
+  // Get session token + load history
   useEffect(() => {
-    fetch('/api/ai/coach/history')
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data)) setMessages(data)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    async function init() {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.access_token) setAccessToken(session.access_token)
+
+      fetch('/api/ai/coach/history')
+        .then(r => r.json())
+        .then(data => { if (Array.isArray(data)) setMessages(data) })
+        .catch(() => {})
+        .finally(() => setLoading(false))
+    }
+    init()
   }, [])
 
   useEffect(() => {
@@ -94,7 +101,10 @@ export default function ZaraChatPage() {
     try {
       const res = await fetch('/api/ai/coach', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
+        },
         body: JSON.stringify({ message: content.trim(), category }),
       })
       const data = await res.json()

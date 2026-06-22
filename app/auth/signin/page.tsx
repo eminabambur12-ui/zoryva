@@ -16,16 +16,13 @@ export default function SignInPage() {
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
 
-    const data = await res.json()
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (!res.ok) {
-      setError(data.error || 'Incorrect email or password.')
+    if (error) {
+      setError('Incorrect email or password.')
       setLoading(false)
       return
     }
