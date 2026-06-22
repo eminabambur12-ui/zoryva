@@ -99,22 +99,21 @@ export default function ZaraChatPage() {
       })
       const data = await res.json()
 
-      if (data.reply) {
-        const assistantMsg: Message = {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: data.reply,
-          created_at: new Date().toISOString(),
-        }
-        setMessages(prev => [...prev, assistantMsg])
+      const replyText = data.reply || (data.error ? `Error: ${data.error}` : 'No response received.')
+      const assistantMsg: Message = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: replyText,
+        created_at: new Date().toISOString(),
       }
-    } catch {
+      setMessages(prev => [...prev, assistantMsg])
+    } catch (err: any) {
       setMessages(prev => [
         ...prev,
         {
           id: `error-${Date.now()}`,
           role: 'assistant',
-          content: 'I ran into an issue. Please try again.',
+          content: `Error: ${err.message || 'Unknown error. Please try again.'}`,
           created_at: new Date().toISOString(),
         },
       ])
