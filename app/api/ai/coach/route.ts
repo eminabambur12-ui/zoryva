@@ -8,12 +8,13 @@ export async function POST(request: Request) {
   try {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
     const { message } = await request.json()
     if (!message) return NextResponse.json({ error: 'No message' }, { status: 400 })
 
-    // Fetch user's financial data to give Zara context (skip if not logged in)
-    const userId = user?.id
+    // Fetch user's financial data to give Zara context
+    const userId = user.id
     const [{ data: profile }, { data: transactions }, { data: budgets }] = userId ? await Promise.all([
       supabase.from('profiles').select('full_name, plan_type').eq('id', userId).single(),
       supabase.from('transactions').select('type, category, amount, date, source').eq('user_id', userId).order('date', { ascending: false }).limit(100),
