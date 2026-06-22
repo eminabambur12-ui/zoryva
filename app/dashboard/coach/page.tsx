@@ -65,19 +65,14 @@ export default function ZaraChatPage() {
 
   // Get session token + load history
   useEffect(() => {
-    async function init() {
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.access_token) setAccessToken(session.access_token)
+    const token = localStorage.getItem('zoryva_token')
+    if (token) setAccessToken(token)
 
-      fetch('/api/ai/coach/history')
-        .then(r => r.json())
-        .then(data => { if (Array.isArray(data)) setMessages(data) })
-        .catch(() => {})
-        .finally(() => setLoading(false))
-    }
-    init()
+    fetch('/api/ai/coach/history')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setMessages(data) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {

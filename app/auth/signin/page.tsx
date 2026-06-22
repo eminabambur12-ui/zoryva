@@ -19,12 +19,17 @@ export default function SignInPage() {
     const { createClient } = await import('@/lib/supabase/client')
     const supabase = createClient()
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
       setError('Incorrect email or password.')
       setLoading(false)
       return
+    }
+
+    // Store token so chat can use it
+    if (data.session?.access_token) {
+      localStorage.setItem('zoryva_token', data.session.access_token)
     }
 
     window.location.href = '/dashboard'
